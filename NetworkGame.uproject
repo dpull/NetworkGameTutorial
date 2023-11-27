@@ -5,7 +5,7 @@
 	"Description": "",
 	"Modules": [
 		{
-			"Name": "Placeholder",
+			"Name": "NetworkGame",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
