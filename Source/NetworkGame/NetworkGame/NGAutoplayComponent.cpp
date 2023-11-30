@@ -21,7 +21,7 @@ void UNGAutoplayComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	if (!GameMode)
 		return;
 
-	auto Ball = GameMode->GetBall();
+	ANGBall* Ball = nullptr;
 	if (!Ball)
 		return;
 

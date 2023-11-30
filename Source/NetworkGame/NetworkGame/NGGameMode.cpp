@@ -1,70 +1,107 @@
 #include "NGGameMode.h"
+
+#include "NGBall.h"
+#include "NGGameState.h"
+#include "NGHud.h"
+#include "NGPawn.h"
+#include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
+#include "Engine/Level.h"
 #include "Engine/World.h"
+#include "GameFramework/GameSession.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 ANGGameMode::ANGGameMode()
 {
-	// PlayerControllerClass = APlayerController::StaticClass();
+	GameStateClass = ANGGameState::StaticClass();
+	HUDClass = ANGHud::StaticClass();
+}
+
+void ANGGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+	GameSession->MaxPlayers = 2;
 }
 
 void ANGGameMode::StartPlay()
 {
 	Super::StartPlay();
-
-	GameHUD = CreateWidget(GetWorld(), GameHUDClass);
-	GameHUD->AddToViewport();
-
-	SpawnNewBall();
 }
 
-void ANGGameMode::BallOverlap(AActor* OtherActor)
+void ANGGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
 {
-	if (OtherActor == TriggerLeft.Get())
+	auto CurPawn = NewPlayer->GetPawn();
+	if (CurPawn)
 	{
-		ScoreLeft++;
+		bool bFind = false;
+		for (auto Pawn : PendingAutoReceiveInputPawns)
+		{
+			if (Pawn == CurPawn)
+			{
+				bFind = true;
+				break;
+			}
+		}
+		if (!bFind)
+		{
+			NewPlayer->Possess(nullptr);
+			CurPawn = nullptr;
+		}
 	}
-	else if (OtherActor == TriggerRight.Get())
+
+	if (!CurPawn)
 	{
-		ScoreRight++;
+		for (auto Pawn : PendingAutoReceiveInputPawns)
+		{
+			if (!Cast<APlayerController>(Pawn->GetController()))
+			{
+				CurPawn = Pawn.Get();
+				break;
+			}
+		}
 	}
-	else
+
+	if (!CurPawn)
 	{
-		UE_LOG(LogNG, Log, TEXT("Ball unknown overlap:%s"), *OtherActor->GetName())
+		FailedToRestartPlayer(NewPlayer);
 		return;
 	}
-
-	UpdateScore();
-	Ball = nullptr;
-
-	SpawnNewBall();
+	
+	NewPlayer->Possess(CurPawn);
+	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
 }
 
-void ANGGameMode::SpawnNewBall()
+void ANGGameMode::OnBallOverlap(ANGBall* InBall, AActor* InOtherActor)
 {
-	check(!Ball.IsValid());
-	// TODO 支持等待1s
-
-	Direction = FMath::FRandRange(-1.0f, 1.0f);
-	Ball = GetWorld()->SpawnActor(BallClass.Get());
-	auto ProjectileMovement = Ball->GetComponentByClass<UProjectileMovementComponent>();
-	if (!ProjectileMovement)
-		return;
-
-	ProjectileMovement->Velocity = FVector(Direction * BallSpeed, 0, 0);
-	ProjectileMovement->Velocity.RotateAngleAxis(FMath::FRandRange(-15.0f, 15.0f), FVector(0, 1, 0));
-}
-
-void ANGGameMode::UpdateScore()
-{
-	FName ScoreText[] = { FName(TEXT("Update Cpu Score Text")), FName(TEXT("Update Player Score Text")) };
-	int32 Score[] = { ScoreLeft, ScoreRight };
-
-	for (int i = 0; i < _countof(ScoreText); ++i)
+	FTimerHandle DummyHandle;
+	GetWorld()->GetTimerManager().SetTimer(DummyHandle, [InBall]()
 	{
-		auto Function = GameHUD->FindFunction(ScoreText[i]);
-		if (!Function)
-			return;
-		GameHUD->ProcessEvent(Function, Score + i);
-	}
+		InBall->Destroy();
+	}, 0.3f, false);
 }
+
+void ANGGameMode::OnBallHit(ANGBall* InBall, AActor* InOtherActor)
+{
+	auto Pawn = Cast<ANGPawn>(InOtherActor);
+	if (Pawn)
+	{
+		Pawn->OnBallHit(InBall);
+
+		auto NGGameState = Cast<ANGGameState>(GameState);
+		if (NGGameState)
+		{
+			if (Pawn->GetActorLabel() == TEXT("Paddle_Left"))
+				NGGameState->AddScore(0, 1);
+			else
+				NGGameState->AddScore(1, 0);
+		}
+
+	}
+	InBall->Destroy();
+}
+
+void ANGGameMode::RegisterPawnForAutoReceiveInput(APawn* InPawn)
+{
+	PendingAutoReceiveInputPawns.Add(InPawn);
+}
+
