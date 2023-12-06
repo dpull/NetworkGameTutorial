@@ -1,20 +1,18 @@
 #include "NGGameMode.h"
-
 #include "NGBall.h"
 #include "NGGameState.h"
-#include "NGHud.h"
+#include "NGHUD.h"
 #include "NGPawn.h"
 #include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/Level.h"
 #include "Engine/World.h"
 #include "GameFramework/GameSession.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 
 ANGGameMode::ANGGameMode()
 {
 	GameStateClass = ANGGameState::StaticClass();
-	HUDClass = ANGHud::StaticClass();
+	HUDClass = ANGHUD::StaticClass();
 }
 
 void ANGGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -66,7 +64,7 @@ void ANGGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* Sta
 		FailedToRestartPlayer(NewPlayer);
 		return;
 	}
-	
+
 	NewPlayer->Possess(CurPawn);
 	Super::RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
 }
@@ -74,10 +72,11 @@ void ANGGameMode::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* Sta
 void ANGGameMode::OnBallOverlap(ANGBall* InBall, AActor* InOtherActor)
 {
 	FTimerHandle DummyHandle;
-	GetWorld()->GetTimerManager().SetTimer(DummyHandle, [InBall]()
-	{
-		InBall->Destroy();
-	}, 0.3f, false);
+	GetWorld()->GetTimerManager().SetTimer(
+		DummyHandle, [InBall]() {
+			InBall->Destroy();
+		},
+		0.3f, false);
 }
 
 void ANGGameMode::OnBallHit(ANGBall* InBall, AActor* InOtherActor)
@@ -95,7 +94,6 @@ void ANGGameMode::OnBallHit(ANGBall* InBall, AActor* InOtherActor)
 			else
 				NGGameState->AddScore(1, 0);
 		}
-
 	}
 	InBall->Destroy();
 }
@@ -104,4 +102,3 @@ void ANGGameMode::RegisterPawnForAutoReceiveInput(APawn* InPawn)
 {
 	PendingAutoReceiveInputPawns.Add(InPawn);
 }
-

@@ -1,5 +1,4 @@
 #include "NGPawn.h"
-
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "NGBall.h"
@@ -31,8 +30,6 @@ ANGPawn::ANGPawn()
 	Speed = 600;
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
 	SpriteComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
-	AutoPlay = CreateDefaultSubobject<UNGAutoplayComponent>(TEXT("AutoPlay"));
 }
 
 void ANGPawn::PreInitializeComponents()
@@ -97,24 +94,25 @@ void ANGPawn::MoveTarget(float TargetZ)
 {
 	if (GetLocalRole() != ROLE_AutonomousProxy)
 		return;
-		
+
 	auto Current = GetActorLocation();
 	auto Diff = TargetZ - Current.Z;
 	if (Diff == 0)
 		return;
-	
+
 	OnMovementInput(Diff > 0 ? 1 : -1);
 }
 
 void ANGPawn::OnBallHit_Implementation(ANGBall* Ball)
 {
 	SpriteComponent->SetSpriteColor(FLinearColor::Black);
-	
+
 	FTimerHandle DummyHandle;
-	GetWorld()->GetTimerManager().SetTimer(DummyHandle, [this]()
-	{
-		this->SpriteComponent->SetSpriteColor(FLinearColor::White);
-	}, 0.5f, false);
+	GetWorld()->GetTimerManager().SetTimer(
+		DummyHandle, [this]() {
+			this->SpriteComponent->SetSpriteColor(FLinearColor::White);
+		},
+		0.2f, false);
 }
 
 void ANGPawn::OnMovementInput(float InScale)
@@ -161,5 +159,3 @@ bool ANGPawn::ServerShoot_Validate()
 {
 	return true;
 }
-
-

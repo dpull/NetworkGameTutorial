@@ -1,6 +1,5 @@
 #pragma once
 
-#include "NGAutoplayComponent.h"
 #include "NGBall.h"
 #include "GameFramework/Character.h"
 #include "PaperSpriteComponent.h"
@@ -33,19 +32,16 @@ protected:
 	void ServerMove(float InDeltaTime, const FVector& InMoveDirection);
 	void ClientMove(float InDeltaTime, const FVector& InMoveDirection);
 	void RealMove(float InDeltaTime, const FVector& InMoveDirection);
-	
+
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerShoot();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = NGPawn)
 	TObjectPtr<UPaperSpriteComponent> SpriteComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = NGPawn)
-	TObjectPtr<UNGAutoplayComponent> AutoPlay;
-
 	UPROPERTY(EditAnywhere, Category = NGPawn)
 	float Speed;
-	
+
 	UPROPERTY(EditAnywhere, Category = NGPawn)
 	FVector BallVelocity;
 };

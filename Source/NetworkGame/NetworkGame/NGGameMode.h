@@ -15,7 +15,7 @@ public:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void StartPlay() override;
 	virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot) override;
-	
+
 	void OnBallOverlap(ANGBall* Ball, AActor* OtherActor);
 	void OnBallHit(ANGBall* Ball, AActor* OtherActor);
 

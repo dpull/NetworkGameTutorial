@@ -17,7 +17,7 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
-	
+
 private:
 	UFUNCTION()
 	void OnHitCallback(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

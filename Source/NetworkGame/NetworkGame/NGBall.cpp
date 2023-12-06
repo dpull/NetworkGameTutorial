@@ -21,13 +21,13 @@ void ANGBall::Spawn(AActor* InShooter, FVector InVelocity)
 
 ANGBall::ANGBall()
 {
-	static ConstructorHelpers::FObjectFinder<UPaperSprite> Sprite(TEXT("/Game/Sprites/Ball_Sprite"));  
+	static ConstructorHelpers::FObjectFinder<UPaperSprite> Sprite(TEXT("/Game/Sprites/Ball_Sprite"));
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
 	SpriteComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	SpriteComponent->SetSprite(Sprite.Object);
 	SpriteComponent->TranslucencySortPriority = 2;
-	
+
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->ProjectileGravityScale = 0;
@@ -42,7 +42,7 @@ void ANGBall::BeginPlay()
 
 	if (GetLocalRole() != ROLE_Authority)
 		return;
-	
+
 	auto PrimComponent = GetComponentByClass<UPrimitiveComponent>();
 	if (PrimComponent)
 	{
@@ -52,10 +52,10 @@ void ANGBall::BeginPlay()
 
 void ANGBall::NotifyActorEndOverlap(AActor* OtherActor)
 {
- 	Super::NotifyActorEndOverlap(OtherActor);
+	Super::NotifyActorEndOverlap(OtherActor);
 	if (GetLocalRole() != ROLE_Authority)
 		return;
-	
+
 	auto GameMode = GetWorld()->GetAuthGameMode<ANGGameMode>();
 	if (GameMode)
 	{
@@ -65,6 +65,9 @@ void ANGBall::NotifyActorEndOverlap(AActor* OtherActor)
 
 void ANGBall::OnHitCallback(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (OtherActor == Shooter)
+		return;
+	
 	auto GameMode = GetWorld()->GetAuthGameMode<ANGGameMode>();
 	if (GameMode)
 	{
