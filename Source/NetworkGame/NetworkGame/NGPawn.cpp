@@ -29,6 +29,7 @@ ANGPawn::ANGPawn()
 {
 	Speed = 600;
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
+	SpriteComponent->TranslucencySortPriority = 1;
 	SpriteComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
