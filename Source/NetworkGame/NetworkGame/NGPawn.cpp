@@ -125,12 +125,15 @@ void ANGPawn::OnShootInput()
 	ServerShoot();
 }
 
-void ANGPawn::ServerMove_Implementation(float InDeltaTime, const FVector& InMoveDirection)
+void ANGPawn::ServerMove_Implementation(float InTimeStamp,float InDeltaTime, const FVector& InMoveDirection)
 {
+	if (LastServerMoveTimeStamp > InTimeStamp)
+		return;
+	LastServerMoveTimeStamp = InDeltaTime;
 	RealMove(InDeltaTime, InMoveDirection);
 }
 
-bool ANGPawn::ServerMove_Validate(float InDeltaTime, const FVector& InMoveDirection)
+bool ANGPawn::ServerMove_Validate(float InTimeStamp,float InDeltaTime, const FVector& InMoveDirection)
 {
 	return true;
 }
@@ -141,7 +144,7 @@ void ANGPawn::ClientMove(float InDeltaTime, const FVector& InMoveDirection)
 		return;
 
 	RealMove(InDeltaTime, InMoveDirection);
-	ServerMove(InDeltaTime, InMoveDirection);
+	ServerMove(GetWorld()->TimeSeconds, InDeltaTime, InMoveDirection);
 }
 
 void ANGPawn::RealMove(float InDeltaTime, const FVector& InMoveDirection)

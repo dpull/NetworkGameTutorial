@@ -29,7 +29,7 @@ protected:
 	void OnShootInput();
 
 	UFUNCTION(unreliable, server, WithValidation)
-	void ServerMove(float InDeltaTime, const FVector& InMoveDirection);
+	void ServerMove(float InTimeStamp,float InDeltaTime, const FVector& InMoveDirection);
 	void ClientMove(float InDeltaTime, const FVector& InMoveDirection);
 	void RealMove(float InDeltaTime, const FVector& InMoveDirection);
 
@@ -44,4 +44,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = NGPawn)
 	FVector BallVelocity;
+
+	float LastServerMoveTimeStamp = 0;
 };
